@@ -26,7 +26,7 @@ class LaravelSettingsServiceProvider extends ServiceProvider
                 __DIR__ . '/../config/settings.php' => config_path('settings.php'),
             ], 'config');
 
-            if (! class_exists('CreateSettingsTable')) {
+            if (!class_exists('CreateSettingsTable')) {
                 $this->publishes([
                     __DIR__ . '/../database/migrations/create_settings_table.php.stub' => database_path('migrations/2022_12_14_083707_create_settings_table.php'),
                 ], 'migrations');
@@ -42,18 +42,21 @@ class LaravelSettingsServiceProvider extends ServiceProvider
         }
 
         Event::subscribe(SettingsEventSubscriber::class);
-        Event::listen(SchemaLoaded::class, fn ($event) => $this->removeMigrationsWhenSchemaLoaded($event));
+        Event::listen(SchemaLoaded::class, fn($event) => $this->removeMigrationsWhenSchemaLoaded($event));
 
-        $this->loadMigrationsFrom($this->resolveMigrationPaths());
+        if (!config('settings.ignore_migrations')) {
+            $this->loadMigrationsFrom($this->resolveMigrationPaths());
+        }
+
     }
 
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/settings.php', 'settings');
 
-        $this->app->bind(SettingsRepository::class, fn () => SettingsRepositoryFactory::create());
+        $this->app->bind(SettingsRepository::class, fn() => SettingsRepositoryFactory::create());
 
-        $this->app->bind(SettingsCacheFactory::class, fn () => new SettingsCacheFactory(
+        $this->app->bind(SettingsCacheFactory::class, fn() => new SettingsCacheFactory(
             config('settings'),
         ));
 
@@ -76,7 +79,7 @@ class LaravelSettingsServiceProvider extends ServiceProvider
                 $contents = file_get_contents($file->getRealPath());
 
                 if (
-                    str_contains($contents, 'return new class extends '.SettingsMigration::class)
+                    str_contains($contents, 'return new class extends ' . SettingsMigration::class)
                     || str_contains($contents, 'return new class extends SettingsMigration')
                 ) {
                     return $file->getBasename('.php');
@@ -90,7 +93,7 @@ class LaravelSettingsServiceProvider extends ServiceProvider
 
                 require_once $file->getRealPath();
 
-                if (! is_subclass_of($found['className'], SettingsMigration::class)) {
+                if (!is_subclass_of($found['className'], SettingsMigration::class)) {
                     return null;
                 }
 
@@ -108,7 +111,7 @@ class LaravelSettingsServiceProvider extends ServiceProvider
 
     protected function resolveMigrationPaths(): array
     {
-        return ! empty(config('settings.migrations_path'))
+        return !empty(config('settings.migrations_path'))
             ? [config('settings.migrations_path')]
             : config('settings.migrations_paths');
     }

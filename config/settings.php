@@ -15,6 +15,8 @@ return [
      */
     'setting_class_path' => app_path('Settings'),
 
+    'ignore_migrations' => true,
+
     /*
      * In these directories settings migrations will be stored and ran when migrating. A settings
      * migration created via the make:settings-migration command will be stored in the first path or
