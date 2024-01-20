@@ -15,7 +15,7 @@ return [
      */
     'setting_class_path' => app_path('Settings'),
 
-    'ignore_migrations' => true,
+    'ignore_migrations' => env('SETTINGS_IGNORE_MIGRATIONS', false),
 
     /*
      * In these directories settings migrations will be stored and ran when migrating. A settings
